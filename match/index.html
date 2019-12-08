@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+function loginCheck(){
+  $.get("/314-ladder/login/index.php",
+  function(data, status){
+    var results = jQuery.parseJSON(data);
+    if (results.username == null){
+	  window.location.assign("../index.html");
+	}
+  });
+}
+</script>
+</head>
+
+<body>
+
+<h2>Matches</h2>
+
+
+<p>If you click the "Submit" button, the form-data will be sent to a page called "/index.php".</p>
+
+</body>
+</html>

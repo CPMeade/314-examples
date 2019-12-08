@@ -18,61 +18,112 @@ $db = new PDO("pgsql:dbname=postgres host=localhost password=314dev user=dev");
 //view match
 if($request->isGet())
 {	
-	
-	//get the username
-	$username = $vars["username"];
-	$played = $vars["played"];
+	try
+	{
+		//get the username
+		if (isset($vars["username"]))
+		{
+			$username = $vars["username"];
+		}
+		else
+		{
+			throw new PDOException('username is required to view a match');
+		}
+		$played = null;
+		if (isset($vars["played"]))
+		{
+			$played = $vars["played"];
+		}
 
-	player_exists($username, $db);
-	
-	if ($played == null)
-	{
-		//create a query
-		$sql = "select * from game where winner = ? or loser = ?";
-		$statement = $db->prepare($sql);
-		$statement->execute([$username, $username]);
-		$results[] = $statement->fetch(PDO::FETCH_ASSOC);
+		player_exists($username, $db);
 		
-		
+		if ($played == null)
+		{
+			$sql = "select * from game where winner = ? or loser = ?";
+			$statement = $db->prepare($sql);
+			$statement->execute([$username, $username]);
+			$results[] = $statement->fetchAll(PDO::FETCH_ASSOC);
+		}
+		else
+		{
+			$sql = "select * from game where (winner = ? or loser = ?) and played = ?";
+			$statement = $db->prepare($sql);
+			$statement->execute([$username, $username, $played]);
+			$results[] = $statement->fetchAll(PDO::FETCH_ASSOC);
+		}
 	}
-	else
+	catch(PDOException $e)
 	{
-		
-		$sql = "select * from game where winner = ? or loser = ? and played = ?";
-		$statement = $db->prepare($sql);
-		$statement->execute([$username, $username, $played]);
-		$results[] = $statement->fetch(PDO::FETCH_ASSOC);
-		
+		$results = array("error_text" => $e->getMessage());
 	}
-	
-	
-	
 }
 //create match
 elseif($request->isPost())
-{
-	//get the request variables
-	$games = $vars["games"];
-	
+{	
 	try
 	{
+		//get the request variables
+		if (isset($vars["games"]))
+		{
+			$games = $vars["games"];
+		}
+		else
+		{
+			throw new PDOException('a match requires valid games to be created');
+		}
+		
 		$db->beginTransaction();
 
 		foreach ($games as $game)
 		{
-			$winner = $game["winner"];
-			$loser = $game["loser"];
-			$played = $game["played"];
-			$won = $game["won"];
-			$lost = $game["lost"];
+			if (isset($game["winner"]))
+			{
+				$winner = $game["winner"];
+			}
+			else
+			{
+				throw new PDOException('a game requires a winner');
+			}
+			if (isset($game["loser"]))
+			{
+				$loser = $game["loser"];
+			}
+			else
+			{
+				throw new PDOException('a game requires a loser');
+			}
+			if (isset($game["played"]))
+			{
+				$played = $game["played"];
+			}
+			else
+			{
+				throw new PDOException('a game requires a played time');
+			}
+			if (isset($game["winner_score"]))
+			{
+				$winner_score = $game["winner_score"];
+			}
+			else
+			{
+				throw new PDOException('a game requires a winner_score');
+			}
+			if (isset($game["loser_score"]))
+			{
+				$loser_score = $game["loser_score"];
+			}
+			else
+			{
+				throw new PDOException('a game requires a loser_score');
+			}
 			
 			player_exists($winner, $db);
 			player_exists($loser, $db);
 			
 			//create an insert statement
-			$sql = "insert into game (winner, loser, played, won, lost) values (?, ?, ?, ?, ?)";
+			$sql = "insert into game (winner, loser, played, winner_score, loser_score) values (?, ?, ?, ?, ?)";
 			$statement = $db->prepare($sql);
-			$statement->execute([$winner, $loser, $played, $won, $lost]);
+			$statement->execute([$winner, $loser, $played, $winner_score, $loser_score]);
 		}
 		
 		// get the winner and loser
@@ -139,14 +190,35 @@ elseif($request->isPost())
 }
 //delete match
 elseif($request->isDelete())
-{
-	//get the username
-	$player1 = $vars["player1"];
-	$player2 = $vars["player2"];
-	$played = $vers["played"];
-	
+{	
 	try
 	{
+		//get the players
+		if (isset($vars["player1"]))
+		{
+			$player1 = $vars["player1"];
+		}
+		else
+		{
+			throw new PDOException('player1 is required to delete a match');
+		}
+		if (isset($vars["player2"]))
+		{
+			$player2 = $vars["player2"];
+		}
+		else
+		{
+			throw new PDOException('player2 is required to delete a match');
+		}
+		if (isset($vars["played"]))
+		{
+			$played = $vars["played"];
+		}
+		else
+		{
+			throw new PDOException('time played is required to delete a match');
+		}
+		
 		player_exists($player1);
 		player_exists($player2);
 		
