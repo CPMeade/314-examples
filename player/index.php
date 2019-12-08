@@ -18,101 +18,294 @@ $db = new PDO("pgsql:dbname=postgres host=localhost password=314dev user=dev");
 //view player
 if($request->isGet())
 {	
-	//get the username
-	$username = $vars["username"];
-
-	//create a query
-	$sql = "select name, email, rank, username, phone from player where username = ?";
-	$statement = $db->prepare($sql);
-	$statement->execute([$username]);
-	$results = $statement->fetch(PDO::FETCH_ASSOC);
 	
-	// calculate win/loss ratios
-	$sql = "select count(winner)/count(match_view) as match_win_percentage from match_view where winner = ? or loser = ?";
-	$statement = $db->prepare($sql);
-	$statement->execute([$username, $username]);
-	$match_win = $statement->fetch(PDO::FETCH_ASSOC);
-	
-	if ($match_win == NULL)
+	try
 	{
-		$match_win["match_win_percentage"] = NULL;
+		//get the username
+		if (isset($vars["all"]))
+		{
+			//create a query
+			$sql = "select name, email, rank, username, phone from player order by rank";
+			$statement = $db->prepare($sql);
+			$statement->execute();
+			$results = $statement->fetchAll(PDO::FETCH_ASSOC);
+			
+			$index = 0;
+			
+			// calculate all player's stats
+			foreach ($results as $player)
+			{
+				$username = $player["username"];
+				// calculate win/loss ratios
+				$sql = "select count(winner)/count(*) *100 as match_win_percentage from match_view where winner = ? or loser = ?";
+				$statement = $db->prepare($sql);
+				$statement->execute([$username, $username]);
+				$match_win = $statement->fetch(PDO::FETCH_ASSOC);
+				
+				if ($match_win == NULL)
+				{
+					$match_win["match_win_percentage"] = NULL;
+				}
+			
+				$results[$index]["match_win_percentage"] = $match_win["match_win_percentage"];
+				
+				$sql = "select count(case when winner=? then 1 else 0 end)/count(*) *100 as game_win_percentage from game where winner = ? or loser = ?";
+				$statement = $db->prepare($sql);
+				$statement->execute([$username, $username, $username]);
+				$game_win = $statement->fetch(PDO::FETCH_ASSOC);
+				
+				if ($game_win == NULL)
+				{
+					$game_win["game_win_percentage"] = NULL;
+				}
+				
+				$results[$index]["game_win_percentage"] = $game_win["game_win_percentage"];
+				
+				$sql = "select avg(won - lost) as winning_margin from match_view where winner = ?";
+				$statement = $db->prepare($sql);
+				$statement->execute([$username]);
+				$win_margin = $statement->fetch(PDO::FETCH_ASSOC);
+				
+				if ($win_margin == NULL)
+				{
+					$win_margin["winning_margin"] = NULL;
+				}
+				
+				$results[$index]["winning_margin"] = $win_margin["winning_margin"];
+				
+				$sql = "select avg(won - lost) as losing_margin from match_view where loser = ?";
+				$statement = $db->prepare($sql);
+				$statement->execute([$username]);
+				$loss_margin = $statement->fetch(PDO::FETCH_ASSOC);
+				
+				if ($loss_margin == NULL)
+				{
+					$loss_margin["losing_margin"] = NULL;
+				}
+				
+				$results[$index]["losing_margin"] = $loss_margin["losing_margin"];
+				
+				$index++;
+			}
+		}
+		else if (isset($vars["top"]))
+		{
+			$minimum = 6;
+			//create a query
+			$sql = "select name, email, rank, username, phone from player where rank < ? order by rank";
+			$statement = $db->prepare($sql);
+			$statement->execute([$minimum]);
+			$results = $statement->fetchAll(PDO::FETCH_ASSOC);
+			
+			$index = 0;
+			
+			// calculate all player's stats
+			foreach ($results as $player)
+			{
+				$username = $player["username"];
+				// calculate win/loss ratios
+				$sql = "select count(winner)/count(*) *100 as match_win_percentage from match_view where winner = ? or loser = ?";
+				$statement = $db->prepare($sql);
+				$statement->execute([$username, $username]);
+				$match_win = $statement->fetch(PDO::FETCH_ASSOC);
+				
+				if ($match_win == NULL)
+				{
+					$match_win["match_win_percentage"] = NULL;
+				}
+			
+				$results[$index]["match_win_percentage"] = $match_win["match_win_percentage"];
+				
+				$sql = "select count(case when winner=? then 1 else 0 end)/count(*) *100 as game_win_percentage from game where winner = ? or loser = ?";
+				$statement = $db->prepare($sql);
+				$statement->execute([$username, $username, $username]);
+				$game_win = $statement->fetch(PDO::FETCH_ASSOC);
+				
+				if ($game_win == NULL)
+				{
+					$game_win["game_win_percentage"] = NULL;
+				}
+				
+				$results[$index]["game_win_percentage"] = $game_win["game_win_percentage"];
+				
+				$sql = "select avg(won - lost) as winning_margin from match_view where winner = ?";
+				$statement = $db->prepare($sql);
+				$statement->execute([$username]);
+				$win_margin = $statement->fetch(PDO::FETCH_ASSOC);
+				
+				if ($win_margin == NULL)
+				{
+					$win_margin["winning_margin"] = NULL;
+				}
+				
+				$results[$index]["winning_margin"] = $win_margin["winning_margin"];
+				
+				$sql = "select avg(won - lost) as losing_margin from match_view where loser = ?";
+				$statement = $db->prepare($sql);
+				$statement->execute([$username]);
+				$loss_margin = $statement->fetch(PDO::FETCH_ASSOC);
+				
+				if ($loss_margin == NULL)
+				{
+					$loss_margin["losing_margin"] = NULL;
+				}
+				
+				$results[$index]["losing_margin"] = $loss_margin["losing_margin"];
+				
+				$index++;
+			}
+		}
+		else if (isset($vars["username"]))
+		{
+			$username = $vars["username"];
+			player_exists($username, $db);
+			
+			//create a query
+			$sql = "select name, email, rank, username, phone from player where username = ?";
+			$statement = $db->prepare($sql);
+			$statement->execute([$username]);
+			$results = $statement->fetch(PDO::FETCH_ASSOC);
+			
+			// calculate win/loss ratios
+			$sql = "select count(winner)/count(match_view) as match_win_percentage from match_view where winner = ? or loser = ?";
+			$statement = $db->prepare($sql);
+			$statement->execute([$username, $username]);
+			$match_win = $statement->fetch(PDO::FETCH_ASSOC);
+			
+			if ($match_win == NULL)
+			{
+				$match_win["match_win_percentage"] = NULL;
+			}
+			
+			$results = array_merge($results, $match_win);
+			
+			$sql = "select count(winner)/count(game) as game_win_percentage from game where winner = ? or loser = ?";
+			$statement = $db->prepare($sql);
+			$statement->execute([$username, $username]);
+			$game_win = $statement->fetch(PDO::FETCH_ASSOC);
+			
+			if ($game_win == NULL)
+			{
+				$game_win["game_win_percentage"] = NULL;
+			}
+			
+			$results = array_merge($results, $game_win);
+			
+			$sql = "select avg(won - lost) as winning_margin from match_view where winner = ?";
+			$statement = $db->prepare($sql);
+			$statement->execute([$username]);
+			$win_margin = $statement->fetch(PDO::FETCH_ASSOC);
+			
+			if ($win_margin == NULL)
+			{
+				$win_margin["winning_margin"] = NULL;
+			}
+			
+			$results = array_merge($results, $win_margin);
+			
+			$sql = "select avg(won - lost) as losing_margin from match_view where loser = ?";
+			$statement = $db->prepare($sql);
+			$statement->execute([$username]);
+			$loss_margin = $statement->fetch(PDO::FETCH_ASSOC);
+			
+			if ($loss_margin == NULL)
+			{
+				$loss_margin["losing_margin"] = NULL;
+			}
+			
+			$results = array_merge($results, $loss_margin);
+			
+			if ($results["username"] == NULL)
+			{
+				$results = "User does not exist";
+			}
+		}
+		else
+		{
+			throw new PDOException('username does not exist');
+		}
+	}
+	catch(PDOException $e)
+	{
+		$results = array("error_text" => $e->getMessage());
 	}
 	
-	$results = array_merge($results, $match_win);
-	
-	$sql = "select count(winner)/count(game) as game_win_percentage from game where winner = ? or loser = ?";
-	$statement = $db->prepare($sql);
-	$statement->execute([$username, $username]);
-	$game_win = $statement->fetch(PDO::FETCH_ASSOC);
-	
-	if ($game_win == NULL)
-	{
-		$game_win["game_win_percentage"] = NULL;
-	}
-	
-	$results = array_merge($results, $game_win);
-	
-	$sql = "select avg(won - lost) as winning_margin from match_view where winner = ?";
-	$statement = $db->prepare($sql);
-	$statement->execute([$username]);
-	$win_margin = $statement->fetch(PDO::FETCH_ASSOC);
-	
-	if ($win_margin == NULL)
-	{
-		$win_margin["winning_margin"] = NULL;
-	}
-	
-	$results = array_merge($results, $win_margin);
-	
-	$sql = "select avg(won - lost) as losing_margin from match_view where loser = ?";
-	$statement = $db->prepare($sql);
-	$statement->execute([$username]);
-	$loss_margin = $statement->fetch(PDO::FETCH_ASSOC);
-	
-	if ($loss_margin == NULL)
-	{
-		$loss_margin["losing_margin"] = NULL;
-	}
-	
-	$results = array_merge($results, $loss_margin);
-	
-	if ($results["username"] == NULL)
-	{
-		$results = "User does not exist";
-	}
 }
 //create player
 elseif($request->isPost())
 {
-	//get the request variables
-	$name = $vars["name"];
-	$email = $vars["email"];
-	$phone = $vars["phone"];
-	$username = $vars["username"];
-	$password = $vars["password"];
-	
-	$sql = "select max(rank) as rank from player";
-	$statement = $db->prepare($sql);
-	$statement->execute();
-	$rank = $statement->fetch(PDO::FETCH_ASSOC)["rank"];
-	$rank = $rank + 1;
-	
-	$phone = validate_phone($phone);
-	$email = validate_email($email);
-	
 	try
 	{
+		//get the request variables
+		if (isset($vars["name"]) && $vars["name"] != "")
+		{
+			$name = $vars["name"];
+		}
+		else
+		{
+			throw new PDOException('name is required to create a player');
+		}
+		if (isset($vars["email"]) && $vars["email"] != "")
+		{
+			$email = $vars["email"];
+		}
+		else
+		{
+			throw new PDOException('email is required to create a player');
+		}
+		if (isset($vars["phone"]))
+		{
+			$phone = $vars["phone"];
+		}
+		else
+		{
+			throw new PDOException('phone number is required to create a player');
+		}
+		if (isset($vars["username"]) && $vars["username"] != "")
+		{
+			$username = $vars["username"];
+		}
+		else
+		{
+			throw new PDOException('username is required to create a player');
+		}
+		if (isset($vars["password"]) && $vars["password"] != "")
+		{
+			$password = $vars["password"];
+		}
+		else
+		{
+			throw new PDOException('password is required to create a player');
+		}
+		
+		// check to see if this username already exists
+		$sql = "select username from player where username = ?";
+		$statement = $db->prepare($sql);
+		$statement->execute([$username]);
+		$exists = $statement->fetch(PDO::FETCH_ASSOC);
+		
+		if ($exists != null)
+		{
+			throw new PDOException('that username is already taken');
+		}
+		
+		$sql = "select max(rank) as rank from player";
+		$statement = $db->prepare($sql);
+		$statement->execute();
+		$rank = $statement->fetch(PDO::FETCH_ASSOC)["rank"];
+		$rank = $rank + 1;
+		
+		$phone = validate_phone($phone);
+		$email = validate_email($email);
+		
+		$password = password_hash($password, PASSWORD_DEFAULT);
+		
 		$db->beginTransaction();
 
 		//create an insert statement
 		$sql = "insert into player (name, email, phone, username, password, rank) values (?, ?, ?, ?, ?, ?)";
-
-		//prepare the statement
 		$statement = $db->prepare($sql);
-
-		//run the statement
 		$statement->execute([$name, $email, $phone, $username, $password, $rank]);
-
 		$db->commit();
 
 		$results = array("error_text" => "");
@@ -125,10 +318,18 @@ elseif($request->isPost())
 //delete player
 elseif($request->isDelete())
 {
-	//get the username
-	$username = $vars["username"];
 	try
 	{
+		//get the username
+		if (isset($vars["username"]))
+		{
+			$username = $vars["username"];
+		}
+		else
+		{
+			throw new PDOException('username is required to delete a player');
+		}
+		
 		// see if the player exists
 		$sql = "select username from player where username = ?";
 		$statement = $db->prepare($sql);
@@ -186,14 +387,39 @@ elseif($request->isDelete())
 //update player
 elseif($request->isPut())
 {
-	$name = $vars["name"];
-	$email = $vars["email"];
-	$phone = $vars["phone"];
-	$username = $vars["username"];
-	$rank = $vars["rank"];
+	$name = null;
+	$email = null;
+	$phone = null;
+	$username = null;
+	$rank = null;
 	
 	try
 	{
+		if (isset($vars["name"]))
+		{
+			$name = $vars["name"];
+		}
+		if (isset($vars["email"]))
+		{
+			$email = $vars["email"];
+		}
+		if (isset($vars["phone"]))
+		{
+			$phone = $vars["phone"];
+		}
+		if (isset($vars["username"]))
+		{
+			$username = $vars["username"];
+		}
+		else
+		{
+			throw new PDOException('username is required to update a player');
+		}
+		if (isset($vars["rank"]))
+		{
+			$rank = $vars["rank"];
+		}
+		
 		$db->beginTransaction();
 		
 		if ($name != null)
@@ -318,6 +544,25 @@ function validate_phone($phone)
 	else
 	{
 		throw new PDOException('invalid phone number');
+	}
+}
+
+function player_exists($username, $db)
+{
+	// check to see if a user exists
+	$sql = "select username from player where username = ?";
+	$statement = $db->prepare($sql);
+	$statement->execute([$username]);
+	$result = $statement->fetch(PDO::FETCH_ASSOC);
+	
+	// Validate username
+	if ($result != null) 
+	{
+		return $username;
+	} 
+	else
+	{
+		throw new PDOException('player does not exist');
 	}
 }
 
