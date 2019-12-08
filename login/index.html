@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+  $("#login").click(function(){
+    $.post("/314-ladder/login/index.php",
+    {
+      username: document.getElementById("username").value,
+      password: document.getElementById("pass").value
+    },
+    function(data,status){
+      var results = jQuery.parseJSON(data);
+	  if (results.error_text == "") {
+		window.location.assign("../home.html");
+	  }
+	  else {
+		document.getElementById("invalid").innerHTML = "Invalid Credentials";
+	  }
+    });
+  });
+});
+</script>
+</head>
+<body>
+
+<h2>Login</h2>
+<br>
+
+Username: <br>
+<input type="text" id="username" value=""> <br>
+Password: <br>
+<input type="text" id="pass" value=""> <br>
+<br>
+<button id="login">Login</button>
+<br><br>
+<p id="invalid"></p>
+
+</body>
+</html>
