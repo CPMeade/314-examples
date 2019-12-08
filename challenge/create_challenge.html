@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+function loginCheck(){
+  var user; 
+  $.get("/314-ladder/login/index.php",
+  function(data, status){
+    var results = jQuery.parseJSON(data);
+    if (results.username == null){
+	  window.location.assign("../index.html");
+	}
+	else {
+	  user = results.username;
+	}
+  });
+  
+  $.get("/314-ladder/challenge/index.php",
+  {
+	challenger: user
+  },
+  function(data, status){
+    var results = jQuery.parseJSON(data);
+	
+	if (results.candidates[0].username != null) {
+	  document.getElementById("challengee1").innerHTML =  results.candidates[0].username;
+	}
+	else {
+	  document.getElementById("challenge1").style.display = "none";
+	}
+	if (results.candidates[1].username != null) {
+	  document.getElementById("challengee2").innerHTML =  results.candidates[1].username;
+	}
+	else {
+	  document.getElementById("challenge2").style.display = "none";
+	}
+	if (results.candidates[2].username != null) {
+	  document.getElementById("challengee3").innerHTML =  results.candidates[2].username;
+	}
+	else {
+	  document.getElementById("challenge3").style.display = "none";
+	}
+	
+  });
+  
+  
+}
+</script>
+<script>
+$(document).ready(function(){
+  $("#challenge1").click(function(){
+  
+	var user;
+    $.get("/314-ladder/login/index.php",
+    function(data, status){
+      var results = jQuery.parseJSON(data);
+      if (results.username == null){
+	    window.location.assign("../index.html");
+	  }
+	  else {
+	    user = results.username;
+	  }
+    });
+
+    $.post("/314-ladder/challenge/index.php",
+    {
+	  challengee: document.getElementById("challengee1").value,
+	  challenger: user,
+	  scheduled: document.getElementById("Time").innerHTML
+	  
+    },
+    function(data,status){
+	  var results = jQuery.parseJSON(data);
+	  if (results.error_text != "") {
+		document.getElementById("results").innerHTML =  results.error_text;
+	  }
+	  else {
+		window.location.assign("../home.html");
+	  }
+		
+    });
+  });
+});
+</script>
+</head>
+<body onload="loginCheck()">
+
+<h2>Issue a Challenge</h2>
+
+
+
+<p id="challengee1"></p> <button id="challenge1">challenge</button><br>
+<p id="challengee2"></p> <button id="challenge2">challenge</button><br>
+<p id="challengee3"></p> <button id="challenge3">challenge</button><br>
+<br>
+Time: <br>
+<input datetime="text" id="Time"> <br>
+
+</body>
+</html>
