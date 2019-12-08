@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+  text-align: left;    
+}
+</style>
+<script>
+function loginCheck(){
+  $.get("/314-ladder/login/index.php",
+  function(data, status){
+    var results = jQuery.parseJSON(data);
+    if (results.username == null){
+	  window.location.assign("../index.html");
+	}
+  });
+  
+  $.get("/314-ladder/player/index.php",
+    {
+      all: "yes"
+    },
+    function(data,status){
+	  var results = jQuery.parseJSON(data);
+	  if (results.error_text != undefined) {
+	  }
+	  else {
+		$("table").append("<ul></ul>");
+		//var labels: [0: "Name", 1: "Email", 2: "Rank", 3: "Username", 4: "Phone Number", 5: "Match Win Percentage", 6: "Game Wing Percentage", 7: "Winning Margin", 8: "Losing Margin"]
+		//var tabl = labels.concat(results);
+		for(var i in results) {
+		  var player = results[i];
+		  var tr = "<tr nowrap>";
+		  $("ul").append(tr)
+		  for (var j in player) {
+			var td = "<td>";
+			$("ul").append(td.concat(player[j]));
+		  }
+		}
+	  }
+		
+    });
+}
+</script>
+</head>
+<body onload="loginCheck()">
+
+<h2>View the Ladder</h2>
+
+<br><br><br>
+
+Results:
+
+<table width=100%>
+</table>
+
+
+
+</body>
+</html>

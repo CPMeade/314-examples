@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+  $("#create").click(function(){
+    $.post("/314-ladder/player/index.php",
+    {
+	  name: document.getElementById("name").value,
+	  email: document.getElementById("email").value,
+      username: document.getElementById("username").value,
+	  phone: document.getElementById("phone").value,
+	  password: document.getElementById("password").value
+    },
+    function(data,status){
+	  var results = jQuery.parseJSON(data);
+	  if (results.error_text != "") {
+		document.getElementById("results").innerHTML =  results.error_text;
+	  }
+	  else {
+		window.location.assign("../home.html");
+	  }
+		
+    });
+  });
+});
+</script>
+</head>
+<body>
+
+<h2>Create a New User</h2>
+
+Name: <br>
+<input type="text" id="name"> <br>
+Email: <br>
+<input type="text" id="email"> <br>
+Username: <br>
+<input type="text" id="username"> <br>
+Phone: <br>
+<input type="text" id="phone"> <br>
+Password: <br>
+<input type="text" id="password"> <br>
+
+<button id="create">create</button>
+
+<br><br><br>
+
+<p id="results"></p>
+
+</body>
+</html>

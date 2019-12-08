@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+function loginCheck(){
+  $.get("/314-ladder/login/index.php",
+  function(data, status){
+    var results = jQuery.parseJSON(data);
+    if (results.username == null){
+	  window.location.assign("../index.html");
+	}
+  });
+}
+</script>
+<script>
+$(document).ready(function(){
+  $("#search").click(function(){
+    $.get("/314-ladder/player/index.php",
+    {
+      username: document.getElementById("username").value
+    },
+    function(data,status){
+	  var results = jQuery.parseJSON(data);
+	  if (results.error_text != undefined) {
+		document.getElementById("results").innerHTML = "error: " + results.error_text;
+		document.getElementById("name").innerHTML = "";
+		document.getElementById("email").innerHTML = "";
+		document.getElementById("username").innerHTML = "";
+		document.getElementById("rank").innerHTML = "";
+		document.getElementById("phone").innerHTML = "";
+		document.getElementById("match win percentage").innerHTML = "";
+		document.getElementById("game win percentage").innerHTML = "";
+		document.getElementById("winning margin").innerHTML = "";
+		document.getElementById("losing margin").innerHTML = "";
+	  }
+	  else {
+		document.getElementById("results").innerHTML = "Data:";
+		document.getElementById("name").innerHTML = "name: " + results.name;
+		document.getElementById("email").innerHTML = "email: " + results.email;
+		document.getElementById("username").innerHTML = "username: " + results.username;
+		document.getElementById("rank").innerHTML = "rank: " + results.rank ;
+		document.getElementById("phone").innerHTML = "phone: " + results.phone;
+		document.getElementById("match win percentage").innerHTML = "match win percentage: " + results.match_win_percentage;
+		document.getElementById("game win percentage").innerHTML = "game win percentage: " + results.game_win_percentage;
+		document.getElementById("winning margin").innerHTML = "winning margin: " + results.winning_margin;
+		document.getElementById("losing margin").innerHTML = "losing margin: " + results.losing_margin;
+	  }
+		
+    });
+  });
+});
+</script>
+</head>
+<body onload="loginCheck()">
+
+<h2>Search for User</h2>
+
+Username: <br>
+<input type="text" id="username"> <br>
+
+<button id="search">Search</button>
+
+<br><br><br>
+
+Results:
+<p id="results"></p>
+<p id="name"></p>
+<p id="email"></p>
+<p id="username"></p>
+<p id="rank"></p>
+<p id="phone"></p>
+<p id="match win percentage"></p>
+<p id="game win percentage"></p>
+<p id="winning margin"></p>
+<p id="losing margin"></p>
+
+</body>
+</html>
