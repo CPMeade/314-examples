@@ -34,23 +34,17 @@ class RestRequest
 			$vars = $_GET;
 		}
 		//otherwise decode the post, put, or delete vars
-		else
+		else if ($this->isPost())
 		{
-			$input = file_get_contents('php://input');
-
-			if(strlen($input))
-			{
-				$vars = json_decode($input, true);
-			}
-			else
-			{
-				$vars = [];
-			}
-
-			//echo an error for debugging
-			if (is_null($vars) && json_last_error()) {
-				echo 'JSON Error: '.json_last_error_msg().'<br />'.PHP_EOL;
-			}
+			$vars = $_POST;
+		}
+		else if ($this->isPut())
+		{
+			$vars = $_PUT;
+		}
+		else if ($this->isDelete())
+		{
+			$vars = $_DELETE;
 		}
 		
 		return $vars;
@@ -96,3 +90,4 @@ class RestRequest
 		return $this->requestType === self::DEL;
 	}
 }
+
