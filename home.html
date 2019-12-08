@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+  text-align: left;    
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script>
+function loginCheck(){
+  $.get("/314-ladder/login/index.php",
+  function(data, status){
+    var results = jQuery.parseJSON(data);
+    if (results.username == null){
+	  window.location.assign("index.html");
+	}
+	else {
+	  document.getElementById("player").innerHTML = results.username;
+	}
+  });
+  
+    $.get("/314-ladder/player/index.php",
+    {
+      top: "yes"
+    },
+    function(data,status){
+	  var results = jQuery.parseJSON(data);
+	  if (results.error_text != undefined) {
+	  }
+	  else {
+		$("table").append("<ul></ul>");
+		//var labels: [0: "Name", 1: "Email", 2: "Rank", 3: "Username", 4: "Phone Number", 5: "Match Win Percentage", 6: "Game Wing Percentage", 7: "Winning Margin", 8: "Losing Margin"]
+		//var tabl = labels.concat(results);
+		for(var i in results) {
+		  var player = results[i];
+		  var tr = "<tr nowrap>";
+		  $("ul").append(tr)
+		  for (var j in player) {
+			var td = "<td>";
+			$("ul").append(td.concat(player[j]));
+		  }
+		}
+	  }
+		
+    });
+}
+</script>
+<script>
+$(document).ready(function(){
+  $("#logout").click(function(){
+    $.ajax({
+      url: 'login/index.php',
+      type: 'DELETE',
+	  success: function(response) {
+		window.location.assign("index.html");
+	  }
+	});
+  });
+  $("#challenge").click(function(){
+	window.location.assign("challenge/create_challenge.html");
+  });
+  $("#view_challenge").click(function(){
+	window.location.assign("challenge/index.html");
+  });
+  $("#view_ladder").click(function(){
+	window.location.assign("player/view_ladder.html");
+  });
+  $("#report").click(function(){
+	window.location.assign("match/index.html");
+  });
+  $("#leave").click(function(){
+    var user;
+	$.get("/314-ladder/login/index.php",
+    function(data, status){
+      var results = jQuery.parseJSON(data);
+      if (results.username == null){
+	    window.location.assign("index.html");
+	  }
+	  else {
+	    user = results.username;
+	  }
+    });
+	/*
+    $.ajax({
+      url: 'login/index.php',
+      type: 'DELETE',
+	  success: function(response) {
+		window.location.assign("index.html");
+	  }
+	});
+	$.ajax({
+      url: 'player/index.php',
+      type: 'DELETE',
+	  success: function(response) {
+		window.location.assign("index.html");
+	  }
+	});
+	$.ajax({
+      url: 'challenge/index.php',
+      type: 'DELETE',
+	  {
+        challenger: user,
+		challengee: *,
+		scheduled: *
+      },
+	  success: function(response) {
+		window.location.assign("index.html");
+	  }
+	});
+	$.ajax({
+      url: 'challenge/index.php',
+      type: 'DELETE',
+	  {
+        challenger: *,
+		challengee: user,
+		scheduled: *
+      },
+	  success: function(response) {
+		window.location.assign("index.html");
+	  }
+	});
+	*/
+	window.location.assign("index.html");
+  });
+});
+</script>
+</head>
+<body onload="loginCheck()">
+
+<h2>Home Page</h2>
+<p id="player"></p>
+<button id="logout">logout</button> <br>
+<br><br>
+
+<button id="challenge">challenge a player</button> <br>
+<button id="view_challenge">view challenges</button> <br>
+<button id="view_ladder">view ladder</button> <br>
+<button id="report">report game scores</button> <br> <br>
+
+<table>
+</table>
+
+<button id="leave">leave the ladder</button> <br>
+
+</body>
+</html>

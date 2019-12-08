@@ -90,4 +90,3 @@ class RestRequest
 		return $this->requestType === self::DEL;
 	}
 }
-
